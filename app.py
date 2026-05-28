@@ -83,28 +83,38 @@ st.markdown("""
     margin-top: 1.2rem;
 }
 
-/* Filter pill row */
-.filter-row {
+/* Tabs — big, bold, clear */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
     background: #111827;
+    padding: 6px 8px;
+    border-radius: 12px;
     border: 1px solid #1e293b;
-    border-radius: 10px;
-    padding: 0.8rem 1.2rem;
-    margin-bottom: 1.2rem;
-    display: flex;
-    gap: 2rem;
-    align-items: center;
+    margin-bottom: 1.5rem;
 }
-
-/* Stat badge inline */
-.badge {
-    display: inline-block;
-    background: #1e293b;
-    border-radius: 6px;
-    padding: 2px 10px;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    margin: 2px;
+.stTabs [data-baseweb="tab"] {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    padding: 0.65rem 1.4rem !important;
+    border-radius: 8px !important;
+    border: none !important;
+    background: transparent !important;
+    letter-spacing: 0.01em;
+    transition: all 0.15s ease;
 }
+.stTabs [data-baseweb="tab"]:hover {
+    color: #cbd5e1 !important;
+    background: #1e293b !important;
+}
+.stTabs [aria-selected="true"] {
+    background: #38bdf8 !important;
+    color: #0a0f1e !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 12px rgba(56,189,248,0.35) !important;
+}
+.stTabs [data-baseweb="tab-border"] { display: none !important; }
+.stTabs [data-baseweb="tab-highlight"] { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
