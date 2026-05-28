@@ -13,7 +13,6 @@ st.set_page_config(
 st.markdown("""
 <style>
     [data-testid="stMetricValue"] { font-size: 2rem; font-weight: bold; }
-    [data-testid="stSidebar"] { background-color: #0e1117; }
     .block-container { padding-top: 1.5rem; }
 </style>
 """, unsafe_allow_html=True)
@@ -37,7 +36,7 @@ def query(sql_str: str) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=cols)
 
 
-# ── Sidebar ──────────────────────────────────────────────────────────────────
+# ── Sidebar ───────────────────────────────────────────────────────────────────
 st.sidebar.title("🏏 IPL Analytics")
 st.sidebar.caption("Seasons 2019–2024 | Databricks Gold Layer")
 st.sidebar.markdown("---")
@@ -71,20 +70,12 @@ if page == "Overview":
 
     with c1:
         st.subheader("🟠 Orange Cap — Top Run Scorer Each Season")
-        oc = query("""
-            SELECT season, batsman AS player, team, season_runs AS runs
-            FROM ipl_analytics.gold_orange_cap
-            ORDER BY season
-        """)
+        oc = query("SELECT * FROM ipl_analytics.gold_orange_cap ORDER BY season")
         st.dataframe(oc, use_container_width=True, hide_index=True)
 
     with c2:
         st.subheader("🟣 Purple Cap — Top Wicket Taker Each Season")
-        pc = query("""
-            SELECT season, bowler AS player, team, season_wickets AS wickets
-            FROM ipl_analytics.gold_purple_cap
-            ORDER BY season
-        """)
+        pc = query("SELECT * FROM ipl_analytics.gold_purple_cap ORDER BY season")
         st.dataframe(pc, use_container_width=True, hide_index=True)
 
 
@@ -120,38 +111,45 @@ elif page == "Batting":
     st.title("🏏 Batting Analytics")
 
     df = query("""
-        SELECT batsman, team, innings, total_runs, highest_score,
-               batting_avg, avg_strike_rate, fifties, hundreds, rank_by_runs
-        FROM ipl_analytics.gold_batting_career
+        SELECT * FROM ipl_analytics.gold_batting_career
         ORDER BY rank_by_runs
         LIMIT 20
     """)
+
+    # detect run column name
+    run_col = "total_runs" if "total_runs" in df.columns else df.select_dtypes("number").columns[1]
+    avg_col = "batting_avg" if "batting_avg" in df.columns else None
+    sr_col  = "avg_strike_rate" if "avg_strike_rate" in df.columns else None
+    name_col = "batsman" if "batsman" in df.columns else df.columns[0]
 
     c1, c2 = st.columns(2)
 
     with c1:
         fig = px.bar(
-            df.head(10), x="total_runs", y="batsman",
+            df.head(10), x=run_col, y=name_col,
             orientation="h",
             title="Top 10 Run Scorers (Career)",
-            color="total_runs",
+            color=run_col,
             color_continuous_scale="Oranges",
-            labels={"total_runs": "Runs", "batsman": "Player"}
+            labels={run_col: "Runs", name_col: "Player"}
         )
         fig.update_layout(yaxis=dict(autorange="reversed"), showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
     with c2:
-        fig = px.scatter(
-            df, x="batting_avg", y="avg_strike_rate",
-            hover_data=["batsman", "team", "total_runs"],
-            title="Average vs Strike Rate",
-            color="total_runs",
-            color_continuous_scale="Oranges",
-            size="total_runs", size_max=28,
-            labels={"batting_avg": "Batting Avg", "avg_strike_rate": "Strike Rate"}
-        )
-        st.plotly_chart(fig, use_container_width=True)
+        if avg_col and sr_col:
+            fig = px.scatter(
+                df, x=avg_col, y=sr_col,
+                hover_data=[name_col, run_col],
+                title="Batting Average vs Strike Rate",
+                color=run_col,
+                color_continuous_scale="Oranges",
+                size=run_col, size_max=28,
+                labels={avg_col: "Batting Avg", sr_col: "Strike Rate"}
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.dataframe(df[[name_col, run_col]].head(10), use_container_width=True, hide_index=True)
 
     st.subheader("Career Stats — Top 20 Batsmen")
     st.dataframe(df, use_container_width=True, hide_index=True)
@@ -161,38 +159,44 @@ elif page == "Bowling":
     st.title("🎯 Bowling Analytics")
 
     df = query("""
-        SELECT bowler, team, matches, total_wickets, avg_economy,
-               bowling_avg, three_fers, rank_by_wickets
-        FROM ipl_analytics.gold_bowling_career
+        SELECT * FROM ipl_analytics.gold_bowling_career
         ORDER BY rank_by_wickets
         LIMIT 20
     """)
+
+    wkt_col  = "total_wickets" if "total_wickets" in df.columns else df.select_dtypes("number").columns[1]
+    eco_col  = "avg_economy"   if "avg_economy"   in df.columns else None
+    bavg_col = "bowling_avg"   if "bowling_avg"   in df.columns else None
+    name_col = "bowler"        if "bowler"        in df.columns else df.columns[0]
 
     c1, c2 = st.columns(2)
 
     with c1:
         fig = px.bar(
-            df.head(10), x="total_wickets", y="bowler",
+            df.head(10), x=wkt_col, y=name_col,
             orientation="h",
             title="Top 10 Wicket Takers (Career)",
-            color="total_wickets",
+            color=wkt_col,
             color_continuous_scale="Purples",
-            labels={"total_wickets": "Wickets", "bowler": "Bowler"}
+            labels={wkt_col: "Wickets", name_col: "Bowler"}
         )
         fig.update_layout(yaxis=dict(autorange="reversed"), showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
     with c2:
-        fig = px.scatter(
-            df, x="avg_economy", y="bowling_avg",
-            hover_data=["bowler", "team", "total_wickets"],
-            title="Economy vs Bowling Average",
-            color="total_wickets",
-            color_continuous_scale="Purples",
-            size="total_wickets", size_max=28,
-            labels={"avg_economy": "Economy Rate", "bowling_avg": "Bowling Avg"}
-        )
-        st.plotly_chart(fig, use_container_width=True)
+        if eco_col and bavg_col:
+            fig = px.scatter(
+                df, x=eco_col, y=bavg_col,
+                hover_data=[name_col, wkt_col],
+                title="Economy vs Bowling Average",
+                color=wkt_col,
+                color_continuous_scale="Purples",
+                size=wkt_col, size_max=28,
+                labels={eco_col: "Economy Rate", bavg_col: "Bowling Avg"}
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.dataframe(df[[name_col, wkt_col]].head(10), use_container_width=True, hide_index=True)
 
     st.subheader("Career Stats — Top 20 Bowlers")
     st.dataframe(df, use_container_width=True, hide_index=True)
@@ -213,21 +217,17 @@ elif page == "Season Records":
         y=["avg_first_innings_score", "avg_second_innings_score"],
         title="Average Innings Scores by Season",
         markers=True,
-        labels={"value": "Avg Score", "variable": "Innings",
-                "avg_first_innings_score": "1st Innings",
-                "avg_second_innings_score": "2nd Innings"}
+        labels={"value": "Avg Score", "variable": "Innings"}
     )
     fig.update_layout(legend_title="Innings")
     st.plotly_chart(fig, use_container_width=True)
 
     c1, c2 = st.columns(2)
-
     with c1:
         fig2 = px.bar(
             df, x="season", y="close_matches",
             title="Close Matches Per Season",
-            color="close_matches",
-            color_continuous_scale="Blues",
+            color="close_matches", color_continuous_scale="Blues",
             labels={"close_matches": "Close Matches"}
         )
         st.plotly_chart(fig2, use_container_width=True)
@@ -251,7 +251,16 @@ elif page == "Head to Head":
 
     df = query("SELECT * FROM ipl_analytics.gold_head_to_head")
 
-    teams = sorted(df["team1"].unique().tolist())
+    # detect column names dynamically
+    cols = df.columns.tolist()
+    t1_col = cols[0]
+    t2_col = cols[1]
+    num_cols = df.select_dtypes("number").columns.tolist()
+    matches_col  = next((c for c in num_cols if "match" in c.lower()), num_cols[0] if num_cols else None)
+    t1wins_col   = next((c for c in num_cols if "1" in c and "win" in c.lower()), num_cols[1] if len(num_cols) > 1 else None)
+    t2wins_col   = next((c for c in num_cols if "2" in c and "win" in c.lower()), num_cols[2] if len(num_cols) > 2 else None)
+
+    teams = sorted(df[t1_col].unique().tolist())
     c1, c2 = st.columns(2)
     with c1:
         team1 = st.selectbox("Team 1", teams)
@@ -259,16 +268,18 @@ elif page == "Head to Head":
         team2 = st.selectbox("Team 2", [t for t in teams if t != team1])
 
     mask = (
-        ((df["team1"] == team1) & (df["team2"] == team2)) |
-        ((df["team1"] == team2) & (df["team2"] == team1))
+        ((df[t1_col] == team1) & (df[t2_col] == team2)) |
+        ((df[t1_col] == team2) & (df[t2_col] == team1))
     )
     row_df = df[mask]
 
-    if len(row_df) > 0:
+    if len(row_df) > 0 and t1wins_col and t2wins_col and matches_col:
         row = row_df.iloc[0]
-        t1, t2 = row["team1"], row["team2"]
-        w1, w2 = int(row["team1_wins"]), int(row["team2_wins"])
-        total = int(row["matches"])
+        t1 = row[t1_col]
+        t2 = row[t2_col]
+        w1 = int(row[t1wins_col])
+        w2 = int(row[t2wins_col])
+        total = int(row[matches_col])
 
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -295,37 +306,37 @@ elif page == "Head to Head":
 elif page == "Venues":
     st.title("🏟️ Venue Analysis")
 
-    df = query("""
-        SELECT venue, matches_played, avg_1st_innings, avg_2nd_innings,
-               batting_first_win_pct
-        FROM ipl_analytics.gold_venue_stats
-        ORDER BY matches_played DESC
-    """)
+    df = query("SELECT * FROM ipl_analytics.gold_venue_stats ORDER BY matches_played DESC")
 
-    fig = px.bar(
-        df, x="venue", y="batting_first_win_pct",
-        title="Batting First Win % by Venue",
-        color="batting_first_win_pct",
-        color_continuous_scale="RdYlGn",
-        text="batting_first_win_pct",
-        labels={"batting_first_win_pct": "Win %", "venue": "Venue"}
-    )
-    fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
-    fig.add_hline(y=50, line_dash="dash", line_color="gray",
-                  annotation_text="50%")
-    fig.update_layout(xaxis_tickangle=-40, showlegend=False)
-    st.plotly_chart(fig, use_container_width=True)
+    venue_col = "venue" if "venue" in df.columns else df.columns[0]
+    num_cols  = df.select_dtypes("number").columns.tolist()
 
-    fig2 = px.bar(
-        df, x="venue",
-        y=["avg_1st_innings", "avg_2nd_innings"],
-        title="Average Innings Scores by Venue",
-        barmode="group",
-        labels={"value": "Avg Score", "venue": "Venue", "variable": "Innings"},
-        color_discrete_map={"avg_1st_innings": "#636EFA", "avg_2nd_innings": "#EF553B"}
-    )
-    fig2.update_layout(xaxis_tickangle=-40)
-    st.plotly_chart(fig2, use_container_width=True)
+    win_col  = next((c for c in num_cols if "win_pct" in c or "batting_first" in c.lower()), None)
+    avg1_col = next((c for c in num_cols if "1st" in c or "first" in c.lower() or "avg_1" in c.lower()), None)
+    avg2_col = next((c for c in num_cols if "2nd" in c or "second" in c.lower() or "avg_2" in c.lower()), None)
+
+    if win_col:
+        fig = px.bar(
+            df, x=venue_col, y=win_col,
+            title="Batting First Win % by Venue",
+            color=win_col, color_continuous_scale="RdYlGn",
+            text=win_col,
+            labels={win_col: "Win %", venue_col: "Venue"}
+        )
+        fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+        fig.add_hline(y=50, line_dash="dash", line_color="gray", annotation_text="50%")
+        fig.update_layout(xaxis_tickangle=-40, showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
+
+    if avg1_col and avg2_col:
+        fig2 = px.bar(
+            df, x=venue_col, y=[avg1_col, avg2_col],
+            title="Average Innings Scores by Venue",
+            barmode="group",
+            labels={"value": "Avg Score", venue_col: "Venue", "variable": "Innings"}
+        )
+        fig2.update_layout(xaxis_tickangle=-40)
+        st.plotly_chart(fig2, use_container_width=True)
 
     st.subheader("Full Venue Stats")
     st.dataframe(df, use_container_width=True, hide_index=True)
