@@ -28,12 +28,19 @@ def get_conn():
 
 
 def query(sql_str: str) -> pd.DataFrame:
-    conn = get_conn()
-    with conn.cursor() as cur:
-        cur.execute(sql_str)
-        rows = cur.fetchall()
-        cols = [d[0] for d in cur.description]
-    return pd.DataFrame(rows, columns=cols)
+    for attempt in range(2):
+        try:
+            conn = get_conn()
+            with conn.cursor() as cur:
+                cur.execute(sql_str)
+                rows = cur.fetchall()
+                cols = [d[0] for d in cur.description]
+            return pd.DataFrame(rows, columns=cols)
+        except Exception:
+            if attempt == 0:
+                get_conn.clear()  # stale connection — force a fresh one
+            else:
+                raise
 
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
