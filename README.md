@@ -4,7 +4,7 @@ A full-stack data engineering project built on **Databricks** with an interactiv
 
 Analyzes 6 seasons (2019–2024) of IPL cricket data across 10 teams using a Delta Lake medallion architecture.
 
-**Live App:** [View on Streamlit Community Cloud](https://harshlotia-ipl-cricket-analytics-app-xxxx.streamlit.app)
+**Live App:** [View on Streamlit Community Cloud](https://ipl-cricket-analytics-mlrqbmsazxrc4irsh6bftq.streamlit.app/)
 
 ---
 
