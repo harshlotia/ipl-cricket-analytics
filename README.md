@@ -3,7 +3,6 @@
 A full-stack data engineering project built on **Databricks** with an interactive **Streamlit** dashboard, analyzing 6 seasons (2019–2024) of IPL cricket data across 10 teams using a Delta Lake medallion architecture.
 
 [![Live App](https://img.shields.io/badge/Live%20App-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://ipl-cricket-analytics-mlrqbmsazxrc4irsh6bftq.streamlit.app/)
-[![Databricks](https://img.shields.io/badge/Built%20with-Databricks-FF3621?style=for-the-badge&logo=databricks)](https://databricks.com)
 
 ---
 
@@ -21,13 +20,6 @@ A full-stack data engineering project built on **Databricks** with an interactiv
 <img width="1677" height="724" alt="Screenshot 2026-05-28 095658" src="https://github.com/user-attachments/assets/3a8b4aee-4887-48fc-b794-8853f70a92c3" />
 
 
----
-
-## Databricks Workspace
-
-> Medallion architecture notebooks: Bronze → Silver → Gold
-
-![Databricks Workspace](screenshots/workspace.png)
 
 ---
 
