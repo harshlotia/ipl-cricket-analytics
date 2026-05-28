@@ -13,11 +13,13 @@ A full-stack data engineering project built on **Databricks** with an interactiv
 
 **Team Win Percentages · Top Run Scorers · Top Wicket Takers**
 
-![Dashboard - Team Stats and Player Rankings](screenshots/dashboard_1.png)
+<img width="1681" height="800" alt="Screenshot 2026-05-28 095634" src="https://github.com/user-attachments/assets/090a632c-75e2-4df5-b47c-b5f4d003a882" />
+
 
 **Average Scores by Season · Orange & Purple Cap Winners**
 
-![Dashboard - Season Trends and Cap Winners](screenshots/dashboard_2.png)
+<img width="1677" height="724" alt="Screenshot 2026-05-28 095658" src="https://github.com/user-attachments/assets/3a8b4aee-4887-48fc-b794-8853f70a92c3" />
+
 
 ---
 
